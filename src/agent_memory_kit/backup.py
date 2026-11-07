@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+from .paths import ROOT
 POSTGRES_IMAGE = "postgres:17-alpine"
 
 

@@ -9,10 +9,7 @@ from urllib.parse import urlsplit, urlunsplit
 
 import asyncpg
 
-from .errors import PublicError
-from .memory import canonical_hash
-
-ROOT = Path(__file__).resolve().parents[2]
+from .paths import ROOT
 
 
 def _json(value):

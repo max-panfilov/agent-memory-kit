@@ -20,8 +20,7 @@ from .auth import (
 from .knowledge import Snapshot
 from .memory import MemoryService
 from .repository import Repository, migrate, seed
-
-ROOT = Path(__file__).resolve().parents[2]
+from .paths import ROOT
 READ_ONLY = ToolAnnotations(
     read_only_hint=True,
     destructive_hint=False,

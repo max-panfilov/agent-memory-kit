@@ -15,6 +15,7 @@
 
 | Переменная | Назначение |
 |---|---|
+| `AGENT_MEMORY_ROOT` | Корень ресурсов; обязателен, если запуск не из корня checkout |
 | `AGENT_MEMORY_DATABASE_URL` | Строка подключения к PostgreSQL |
 | `AGENT_MEMORY_CONTENT_ROOT` | Корень синтетического каталога |
 | `AGENT_MEMORY_PRINCIPALS_PATH` | JSON с хэшами и областями |

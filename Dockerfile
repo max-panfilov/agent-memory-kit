@@ -9,7 +9,7 @@ RUN apt-get update \
  && useradd --uid 10001 --gid agent --no-create-home --home-dir /tmp --shell /usr/sbin/nologin agent
 
 COPY --from=uv /uv /usr/local/bin/uv
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 UV_LINK_MODE=copy
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 UV_LINK_MODE=copy AGENT_MEMORY_ROOT=/app
 WORKDIR /app
 COPY pyproject.toml uv.lock README.md ./
 RUN --mount=type=cache,id=agent-memory-uv-python312-v1,target=/root/.cache/uv uv sync --frozen --no-dev --no-install-project
