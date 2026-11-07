@@ -1,0 +1,30 @@
+[project]
+name = "agent-memory-kit"
+version = "0.1.0"
+description = "Provider-neutral MCP server for shared, canonical project memory"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [{name = "Max Panfilov"}]
+dependencies = [
+  "asyncpg==0.32.0",
+  "fastmcp==4.1.0",
+  "jsonschema==4.26.0",
+  "mcp==2.3.0",
+  "starlette==1.7.0",
+]
+
+[project.scripts]
+agent-memory-kit = "agent_memory_kit.server:main"
+agent-memory-bridge = "agent_memory_kit.bridge:main"
+agent-memory-backup = "agent_memory_kit.backup:main"
+
+[build-system]
+requires = ["hatchling==1.29.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agent_memory_kit"]
+
+[tool.uv]
+constraint-dependencies = ["certifi>=2026.10.19"]

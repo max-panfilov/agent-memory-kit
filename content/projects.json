@@ -1,0 +1,32 @@
+{
+  "projects": [
+    {
+      "id": 1,
+      "name": "Demo Project",
+      "repository": "example-org/demo-project",
+      "aliases": ["demo", "example"],
+      "applications": [
+        {
+          "id": "demo-app",
+          "name": "Demo Application",
+          "required_documents": ["memory-contract"],
+          "reference_documents": ["operations-guide", "future-experiments"]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Other Project",
+      "repository": "example-org/other-project",
+      "aliases": ["other"],
+      "applications": [
+        {
+          "id": "other-app",
+          "name": "Other Application",
+          "required_documents": ["memory-contract"],
+          "reference_documents": []
+        }
+      ]
+    }
+  ]
+}
