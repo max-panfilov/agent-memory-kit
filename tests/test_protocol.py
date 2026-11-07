@@ -87,7 +87,7 @@ class ProtocolTests(DatabaseTestCase):
                 continue
             if "id" in message:
                 replies[message["id"]] = message
-        self.assertEqual(set(replies), {1, 2, 3, 4})
+        self.assertEqual(set(replies), {1, 2, 3, 4}, "STDOUT:\n" + result.stdout + "\nSTDERR:\n" + result.stderr)
         self.assertEqual(len(replies[2]["result"]["tools"]), 8)
         self.assertFalse(replies[3]["result"]["structuredContent"]["replayed"])
         self.assertEqual(

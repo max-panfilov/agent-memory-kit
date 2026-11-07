@@ -167,18 +167,15 @@ class Repository:
                     if not saved or saved["payload_hash"] != event["payload_hash"]:
                         raise PublicError("MEMORY_WRITE_READBACK_REQUIRED")
                     return {"event": saved, "replayed": False, "readback_verified": True}
-        except PublicError:
-            raise
-        except asyncpg.exceptions.UniqueViolationError:
+        except (asyncpg.exceptions.UniqueViolationError, asyncpg.exceptions.SerializationError) as error:
             async with self.pool.acquire() as connection:
                 saved = await self._read_with_connection(connection, project, event_id)
             if not saved or saved["application_id"] != application or saved["payload_hash"] != event["payload_hash"]:
-                raise PublicError("MEMORY_REQUEST_ID_CONFLICT") from None
+                raise PublicError("MEMORY_REQUEST_ID_CONFLICT") from error
             return {"event": saved, "replayed": True, "readback_verified": True}
         except (
             asyncpg.exceptions.ConnectionDoesNotExistError,
             asyncpg.exceptions.InterfaceError,
-            asyncpg.exceptions.SerializationError,
             asyncio.TimeoutError,
             OSError,
         ) as error:
