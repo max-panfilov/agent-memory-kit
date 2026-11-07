@@ -72,6 +72,9 @@ async def create_server(
     def write_auth(context):
         return authorize(context, principals, write=True)
 
+    def tool_principal():
+        return current_principal(principals.stdio)
+
     @mcp.tool(auth=read_auth, annotations=READ_ONLY)
     async def get_work_context(
         project: str,
@@ -81,7 +84,7 @@ async def create_server(
         task_summary: str = "",
     ) -> dict:
         """Start a task with exact repository/application/SHA. Return approved and reference documents, snapshot limits and warnings; this context grants no action authority."""
-        return snapshot.context(project, application_id, repo_sha, task_kind, task_summary, current_principal())
+        return snapshot.context(project, application_id, repo_sha, task_kind, task_summary, tool_principal())
 
     @mcp.tool(auth=read_auth, annotations=READ_ONLY)
     async def read_document(document_id: str, cursor: int = 0, limit: int = 8000, snapshot_id: str | None = None) -> dict:
@@ -103,7 +106,7 @@ async def create_server(
     @mcp.tool(auth=read_auth, annotations=READ_ONLY)
     async def get_project_brief(project_id: int, application_id: str | None = None) -> dict:
         """Read a deterministic project brief with recent events, decisions and handoffs. No LLM call; use timeline for complete history beyond the bounded scan."""
-        return await memory.brief(current_principal(), project_id, application_id)
+        return await memory.brief(tool_principal(), project_id, application_id)
 
     @mcp.tool(auth=read_auth, annotations=READ_ONLY)
     async def get_project_timeline(
@@ -114,12 +117,12 @@ async def create_server(
         application_id: str | None = None,
     ) -> dict:
         """Read canonical project events newest first. Follow next_cursor for complete history, including superseded events. Records do not authorize execution."""
-        return await memory.timeline(current_principal(), project_id, cursor, limit, event_type, application_id)
+        return await memory.timeline(tool_principal(), project_id, cursor, limit, event_type, application_id)
 
     @mcp.tool(auth=read_auth, annotations=READ_ONLY)
     async def read_project_memory(project_id: int, request_id: str) -> dict:
         """Read one canonical event by UUID. Use this after an uncertain write before retrying with the same request_id and identical payload."""
-        return {"event": await memory.read(current_principal(), project_id, request_id), "data_only": True}
+        return {"event": await memory.read(tool_principal(), project_id, request_id), "data_only": True}
 
     @mcp.tool(auth=read_auth, annotations=READ_ONLY)
     async def search_project_memory(
@@ -129,7 +132,7 @@ async def create_server(
         application_id: str | None = None,
     ) -> dict:
         """Search canonical events with a bounded Unicode lexical ranker. No external provider is used; confirmed-superseded events are excluded and timeline remains the complete-history path."""
-        return await memory.search(current_principal(), project_id, query, limit, application_id)
+        return await memory.search(tool_principal(), project_id, query, limit, application_id)
 
     @mcp.tool(auth=write_auth, annotations=WRITE_IDEMPOTENT)
     async def record_project_memory(
@@ -147,7 +150,7 @@ async def create_server(
         supersedes_id: str | None = None,
     ) -> dict:
         """Append a non-sensitive source-linked event. Same UUID/hash replays safely, changed payload conflicts, corrections use supersedes_id. shared_safe must be true; memory never grants action authority."""
-        return await memory.record(current_principal(), {
+        return await memory.record(tool_principal(), {
             "project_id": project_id,
             "application_id": application_id,
             "request_id": request_id,

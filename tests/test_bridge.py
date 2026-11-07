@@ -56,7 +56,7 @@ class BridgeTests(unittest.TestCase):
                 if method == "initialize":
                     reply["result"]["protocolVersion"] = "2025-06-18"
                 if method == "slow":
-                    time.sleep(0.05)
+                    time.sleep(0.25)
                 self.send_response(200)
                 if method in ("initialize", "fast", "slow"):
                     self.send_header("Content-Type", "text/event-stream")

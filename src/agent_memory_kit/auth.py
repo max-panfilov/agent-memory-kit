@@ -97,8 +97,8 @@ def authorize(context: AuthContext, registry: PrincipalRegistry, write: bool = F
     return True
 
 
-def current_principal() -> Principal:
-    principal = _current.get()
+def current_principal(fallback: Principal | None = None) -> Principal:
+    principal = _current.get() or fallback
     if principal is None:
         raise PublicError("MEMORY_PRINCIPAL_REQUIRED")
     return principal
