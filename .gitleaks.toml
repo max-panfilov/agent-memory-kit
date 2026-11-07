@@ -2,5 +2,5 @@ title = "Synthetic demo data only"
 
 [allowlist]
 description = "SHA-256 hashes of public, synthetic demo tokens. This exception is valid only for the included demo."
-regexTarget = "path"
+regexTarget = "match"
 paths = ['''^content/principals\.json$''']
