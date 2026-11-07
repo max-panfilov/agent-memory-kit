@@ -1,0 +1,139 @@
+name: ${COMPOSE_PROJECT_NAME:-agent-memory-kit}
+
+x-app-environment: &app-environment
+  AGENT_MEMORY_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+  AGENT_MEMORY_CONTENT_ROOT: /app/content
+  AGENT_MEMORY_PRINCIPALS_PATH: /app/content/principals.json
+  AGENT_MEMORY_STDIO_CLIENT_ID: ${AGENT_MEMORY_STDIO_CLIENT_ID:-demo-writer}
+  AGENT_MEMORY_LOG_LEVEL: ${AGENT_MEMORY_LOG_LEVEL:-INFO}
+
+x-app-security: &app-security
+  read_only: true
+  tmpfs:
+    - /tmp:size=128m,noexec,nosuid,nodev
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    networks:
+      - backend
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: .
+      target: runtime
+    environment: *app-environment
+    command: ["--migrate"]
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+    <<: *app-security
+
+  seed:
+    build:
+      context: .
+      target: runtime
+    environment: *app-environment
+    command: ["--seed"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    networks:
+      - backend
+    <<: *app-security
+
+  mcp:
+    build:
+      context: .
+      target: runtime
+    environment: *app-environment
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:${MCP_PORT:-8775}:8000"
+    networks:
+      - backend
+    <<: *app-security
+    healthcheck:
+      test: ["CMD", "/app/.venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).read()"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  test-migrate:
+    build:
+      context: .
+      target: runtime
+    profiles: ["test"]
+    environment:
+      <<: *app-environment
+      AGENT_MEMORY_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/agent_memory_test
+    command: ["--migrate"]
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+    <<: *app-security
+
+  test:
+    build:
+      context: .
+      target: checks
+    profiles: ["test"]
+    environment:
+      <<: *app-environment
+      AGENT_MEMORY_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/agent_memory_test
+      AGENT_MEMORY_TEST_MODE: "1"
+    depends_on:
+      test-migrate:
+        condition: service_completed_successfully
+    networks:
+      - backend
+    <<: *app-security
+
+  smoke:
+    build:
+      context: .
+      target: runtime
+    profiles: ["test"]
+    environment:
+      <<: *app-environment
+      AGENT_MEMORY_URL: http://mcp:8000/mcp
+      DEMO_READER_TOKEN: ${DEMO_READER_TOKEN}
+      DEMO_WRITER_TOKEN: ${DEMO_WRITER_TOKEN}
+      OTHER_WRITER_TOKEN: ${OTHER_WRITER_TOKEN}
+    command: ["/app/.venv/bin/python", "/app/scripts/smoke_quickstart.py"]
+    depends_on:
+      mcp:
+        condition: service_healthy
+    networks:
+      - backend
+    <<: *app-security
+
+volumes:
+  db-data:
+
+networks:
+  backend:
+    driver: bridge

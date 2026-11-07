@@ -1,0 +1,49 @@
+{
+  "documents": [
+    {
+      "id": "memory-contract",
+      "title": "Контракт памяти проекта",
+      "version": "1.0.0",
+      "kind": "standard",
+      "status": "approved",
+      "sha256": "b8a2f9b744c5bb080429605a334fee129c0cfcfe3ab77fb743e6168a4ea77ff6",
+      "path": "docs/memory-contract.md",
+      "profiles": [],
+      "source_refs": [],
+      "review_due": "2027-12-31",
+      "source_repository": "example-org/agent-memory-kit",
+      "approval": {
+        "reviewer": "Synthetic Demo Owner",
+        "reviewed_at": "2026-11-07T09:00:00Z",
+        "review_ref": "urn:example:memory-contract-v1",
+        "content_sha256": "b8a2f9b744c5bb080429605a334fee129c0cfcfe3ab77fb743e6168a4ea77ff6"
+      }
+    },
+    {
+      "id": "operations-guide",
+      "title": "Операционный путеводитель",
+      "version": "1.0.0",
+      "kind": "project-guide",
+      "status": "observed",
+      "sha256": "52bfcb7df936fd1c21a5b6ac62d0437259a6b594fac5eba9013e456e964b6760",
+      "path": "docs/operations-guide.md",
+      "profiles": [],
+      "source_refs": [],
+      "review_due": "2027-12-31",
+      "source_repository": "example-org/agent-memory-kit"
+    },
+    {
+      "id": "future-experiments",
+      "title": "Будущие эксперименты",
+      "version": "0.1.0",
+      "kind": "research",
+      "status": "draft",
+      "sha256": "37a78560496d74b50125b1640858a6f1affffe7837991ff9479d19397bff397e",
+      "path": "docs/future-experiments.md",
+      "profiles": ["future"],
+      "source_refs": [],
+      "review_due": "2027-12-31",
+      "source_repository": "example-org/agent-memory-kit"
+    }
+  ]
+}

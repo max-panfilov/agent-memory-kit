@@ -1,0 +1,13 @@
+{
+  "project_id": 1,
+  "application_id": "demo-app",
+  "request_id": "00000000-0000-4000-8000-000000000001",
+  "event_type": "decision",
+  "title": "Хранить решения в каноническом журнале",
+  "summary": "Агенты читают одну историю проекта и дополняют её новыми событиями.",
+  "details": "Синтетическое решение для демонстрации записи, чтения, поиска и повтора UUID.",
+  "occurred_at": "2026-11-07T12:00:00+03:00",
+  "source_refs": [{"kind": "document", "ref": "docs/protocol.md"}],
+  "shared_safe": true,
+  "event_status": "confirmed"
+}

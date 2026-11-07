@@ -1,0 +1,25 @@
+{
+  "principals": [
+    {
+      "client_id": "demo-reader",
+      "token_sha256": "e18b5e53f72af866db11e3ad05e4054cb109d0a55191674df0cb1c438d88d315",
+      "scopes": ["memory:read"],
+      "projects": [1],
+      "applications": {"1": ["demo-app"]}
+    },
+    {
+      "client_id": "demo-writer",
+      "token_sha256": "cafa8b67af892c597ba51e097b00a8dcb7bac09a3ac2403b5a8a700bb4c37b3a",
+      "scopes": ["memory:read", "memory:write"],
+      "projects": [1],
+      "applications": {"1": ["demo-app"]}
+    },
+    {
+      "client_id": "other-writer",
+      "token_sha256": "e63944ba982cd94afa6090f9bc7020efb5382b4f105f58c2a30954d2c3460000",
+      "scopes": ["memory:read", "memory:write"],
+      "projects": [2],
+      "applications": {"2": ["other-app"]}
+    }
+  ]
+}

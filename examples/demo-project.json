@@ -1,0 +1,5 @@
+{
+  "projects": [
+    {"id": 1, "name": "Demo Project", "repository": "example-org/demo", "application_id": "demo-app"}
+  ]
+}
