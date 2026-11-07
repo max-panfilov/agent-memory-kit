@@ -2,6 +2,9 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
+if [[ ! -f .env ]]; then
+  cp .env.example .env
+fi
 export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-agent-memory-kit-verify}"
 
 cleanup() {
