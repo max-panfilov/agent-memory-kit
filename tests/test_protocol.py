@@ -89,6 +89,7 @@ class ProtocolTests(DatabaseTestCase):
                 replies[message["id"]] = message
         self.assertEqual(set(replies), {1, 2, 3, 4}, "STDOUT:\n" + result.stdout + "\nSTDERR:\n" + result.stderr)
         self.assertEqual(len(replies[2]["result"]["tools"]), 8)
+        self.assertIn("result", replies[3], str(replies))
         self.assertFalse(replies[3]["result"]["structuredContent"]["replayed"])
         self.assertEqual(
             replies[4]["result"]["structuredContent"]["event"]["payload_hash"],
