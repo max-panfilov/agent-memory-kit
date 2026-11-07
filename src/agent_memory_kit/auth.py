@@ -53,7 +53,7 @@ class MemoryTokenVerifier(TokenVerifier):
 
 
 def load_principals(root: Path, path: Path, stdio_client_id: str) -> PrincipalRegistry:
-    schema = json.loads((root / "schemas" / "principals.schema.json").read_text(encoding="utf-8"))
+    schema = json.loads((root.parent / "schemas" / "principals.schema.json").read_text(encoding="utf-8"))
     value = json.loads(path.read_text(encoding="utf-8"))
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(value)
     principals = []

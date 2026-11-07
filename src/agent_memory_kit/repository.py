@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
 
@@ -152,7 +153,7 @@ class Repository:
                         event["summary"],
                         event["details"],
                         event["event_status"],
-                        event["occurred_at"],
+                        datetime.fromisoformat(event["occurred_at"]),
                         json.dumps(event["source_refs"], ensure_ascii=False),
                         event["supersedes_id"],
                         event["payload_hash"],

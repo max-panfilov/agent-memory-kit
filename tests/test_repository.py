@@ -30,7 +30,7 @@ class RepositoryTests(DatabaseTestCase):
 
     async def test_commit_ack_loss_reconciles_by_original_uuid(self):
         event = make_event()
-        original_commit = asyncpg.Connection.commit
+        original_commit = asyncpg.transaction.Transaction._Transaction__commit
         calls = 0
 
         async def losing_commit(connection):
@@ -39,7 +39,7 @@ class RepositoryTests(DatabaseTestCase):
             calls += 1
             raise asyncpg.exceptions.InterfaceError("injected lost commit acknowledgement")
 
-        with patch("asyncpg.Connection.commit", new=losing_commit):
+        with patch("asyncpg.transaction.Transaction._Transaction__commit", new=losing_commit):
             with self.assertRaisesRegex(PublicError, "OUTCOME_UNKNOWN"):
                 await self.repository.append(event, "demo-writer")
         self.assertEqual(calls, 1)
