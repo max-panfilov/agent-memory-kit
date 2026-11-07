@@ -140,7 +140,7 @@ codex mcp add agent-memory -- \
   --config /absolute/path/agent-memory-kit/client.json
 ```
 
-Подготовка bridge, проверка конфигурации и сценарий работы двух агентов — в [руководстве по клиентам](docs/clients.md). Файл `examples/AGENTS.md` задаёт цикл «начало работы → чтение → запись результата → восстановление».
+Регистрация сервера не задаёт поведение агента. Скопируйте [`examples/AGENTS.md`](examples/AGENTS.md) в корень проекта: Codex читает его напрямую, Claude Code — если в проекте нет `CLAUDE.md`; при наличии `CLAUDE.md` добавьте в него `@AGENTS.md`. Подготовка bridge и проверка конфигурации — в [руководстве по клиентам](docs/clients.md).
 
 ## Типовой рабочий цикл
 
