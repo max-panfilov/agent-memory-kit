@@ -19,6 +19,7 @@ RUN --mount=type=cache,id=agent-memory-uv-python312-v1,target=/root/.cache/uv uv
 FROM base AS runtime
 COPY migrations ./migrations
 COPY content ./content
+COPY schemas ./schemas
 COPY scripts ./scripts
 USER agent
 EXPOSE 8000
@@ -28,6 +29,7 @@ CMD ["--transport", "http", "--host", "0.0.0.0", "--port", "8000"]
 FROM base AS checks
 COPY migrations ./migrations
 COPY content ./content
+COPY schemas ./schemas
 COPY scripts ./scripts
 COPY tests ./tests
 USER agent

@@ -141,7 +141,7 @@ class Snapshot:
         document = self.docs.get(document_id)
         if not document:
             raise PublicError("DOCUMENT_NOT_AVAILABLE")
-        if not isinstance(cursor, int) or isinstance(cursor, bool) or cursor < 0 or not 1 <= limit <= 12000 or cursor > len(document["content"]):
+        if not isinstance(cursor, int) or isinstance(cursor, bool) or cursor < 0 or not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 12000 or cursor > len(document["content"]):
             raise PublicError("INVALID_PAGINATION")
         content = document["content"][cursor:cursor + limit]
         return {
@@ -164,7 +164,7 @@ class Snapshot:
         snapshot_id: str | None = None,
     ) -> dict:
         self.require_snapshot(snapshot_id)
-        if not isinstance(query, str) or len(query) > 500 or not isinstance(cursor, int) or cursor < 0 or not 1 <= limit <= 20:
+        if not isinstance(query, str) or len(query) > 500 or not isinstance(cursor, int) or isinstance(cursor, bool) or cursor < 0 or not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 20:
             raise PublicError("INVALID_SEARCH")
         words = re.findall(r"[^\W_]+", query, re.UNICODE)[:12]
         if not words:

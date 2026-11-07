@@ -109,7 +109,7 @@ class BridgeTests(unittest.TestCase):
                 self.assertEqual(headers["Authorization"], "Bearer test")
                 if request.get("method") != "initialize":
                     self.assertEqual(headers["Mcp-Session-Id"], "session-1")
-                    self.assertEqual(headers["MCP-Protocol-Version"], "2025-06-18")
+                    self.assertEqual(headers.get("MCP-Protocol-Version", headers.get("Mcp-Protocol-Version")), "2025-06-18", str(headers))
             self.assertEqual(received[-1][0]["method"], "DELETE")
         finally:
             server.shutdown()

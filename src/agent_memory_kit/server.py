@@ -177,15 +177,7 @@ async def create_server(
     return mcp
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Agent Memory Kit MCP server")
-    parser.add_argument("--transport", choices=("http", "stdio"), default="http")
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8775)
-    parser.add_argument("--migrate", action="store_true")
-    parser.add_argument("--seed", action="store_true")
-    args = parser.parse_args()
-
+async def serve(args) -> None:
     content_root = Path(os.environ.get("AGENT_MEMORY_CONTENT_ROOT", ROOT / "content"))
     principals_path = Path(os.environ.get("AGENT_MEMORY_PRINCIPALS_PATH", content_root / "principals.json"))
     database_url = os.environ.get("AGENT_MEMORY_DATABASE_URL")
@@ -194,23 +186,21 @@ def main() -> None:
     if args.migrate or args.seed:
         if not database_url:
             raise SystemExit("AGENT_MEMORY_DATABASE_URL is required")
-        async def prepare() -> None:
-            if args.migrate:
-                await migrate(database_url)
-            if args.seed:
-                await seed(database_url, content_root)
-        asyncio.run(prepare())
+        if args.migrate:
+            await migrate(database_url)
+        if args.seed:
+            await seed(database_url, content_root)
         return
 
-    server = asyncio.run(create_server(
+    server = await create_server(
         content_root=content_root,
         principals_path=principals_path,
         database_url=database_url,
         stdio_client_id=stdio_client_id,
-    ))
+    )
     try:
         if args.transport == "http":
-            server.run(
+            await server.run_async(
                 transport="http",
                 host=args.host,
                 port=args.port,
@@ -218,9 +208,20 @@ def main() -> None:
                 show_banner=False,
             )
         else:
-            server.run(transport="stdio")
+            await server.run_async(transport="stdio")
     finally:
-        asyncio.run(server._agent_memory_repository.close())
+        await server._agent_memory_repository.close()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Agent Memory Kit MCP server")
+    parser.add_argument("--transport", choices=("http", "stdio"), default="http")
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=8775)
+    parser.add_argument("--migrate", action="store_true")
+    parser.add_argument("--seed", action="store_true")
+    args = parser.parse_args()
+    asyncio.run(serve(args))
 
 
 if __name__ == "__main__":

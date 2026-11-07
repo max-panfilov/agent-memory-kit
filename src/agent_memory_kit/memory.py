@@ -202,7 +202,7 @@ class MemoryService:
         application_id: str | None = None,
     ) -> dict:
         applications = self._applications(principal, project_id, application_id)
-        if not isinstance(cursor, int) or isinstance(cursor, bool) or cursor < 0 or not 1 <= limit <= 50:
+        if not isinstance(cursor, int) or isinstance(cursor, bool) or cursor < 0 or not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 50:
             raise PublicError("INVALID_PAGINATION")
         if event_type and event_type not in EVENT_TYPES:
             raise PublicError("INVALID_MEMORY_TYPE_OR_STATUS")
@@ -253,7 +253,7 @@ class MemoryService:
     async def search(
         self, principal: Principal, project_id: int, query: str, limit: int = 10, application_id: str | None = None
     ) -> dict:
-        if not isinstance(query, str) or not 1 <= len(query.strip()) <= 1000 or not 1 <= limit <= 20:
+        if not isinstance(query, str) or not 1 <= len(query.strip()) <= 1000 or not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 20:
             raise PublicError("INVALID_MEMORY_QUERY")
         if SECRET.search(query):
             raise PublicError("POSSIBLE_SECRET_REFUSED")

@@ -3,12 +3,13 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
 
 import asyncpg
 
+from .errors import PublicError
+from .memory import canonical_hash
 from .paths import ROOT
 
 
