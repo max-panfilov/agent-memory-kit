@@ -1,5 +1,5 @@
 FROM node:22-bookworm@sha256:7702d8aa4d5910871692af4480eb3ba86f23047a6417a44d857d06c95d060d3f
 WORKDIR /app
-RUN npm install --prefix /app mermaid@12.3.0
+RUN npm install --prefix /app mermaid@12.3.0 jsdom@31.0.0
 COPY ci/check_mermaid.mjs /app/check_mermaid.mjs
 ENTRYPOINT ["node", "/app/check_mermaid.mjs", "/data"]

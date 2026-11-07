@@ -1,6 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import mermaid from 'mermaid';
+import { JSDOM } from 'jsdom';
+
+const { window } = new JSDOM('<!doctype html>');
+globalThis.window = window;
+globalThis.document = window.document;
+globalThis.navigator = window.navigator;
+globalThis.self = window;
+const mermaid = (await import('mermaid')).default;
 
 const root = process.argv[2] || '/data';
 const files = [];
