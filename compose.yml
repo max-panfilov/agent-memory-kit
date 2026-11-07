@@ -123,7 +123,7 @@ services:
       DEMO_READER_TOKEN: ${DEMO_READER_TOKEN}
       DEMO_WRITER_TOKEN: ${DEMO_WRITER_TOKEN}
       OTHER_WRITER_TOKEN: ${OTHER_WRITER_TOKEN}
-    command: ["/app/.venv/bin/python", "/app/scripts/smoke_quickstart.py"]
+    entrypoint: ["/app/.venv/bin/python", "/app/scripts/smoke_quickstart.py"]
     depends_on:
       mcp:
         condition: service_healthy
