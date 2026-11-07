@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import select
 import subprocess
 import sys
 import unittest
@@ -70,24 +71,44 @@ class ProtocolTests(DatabaseTestCase):
             "AGENT_MEMORY_STDIO_CLIENT_ID": "demo-writer",
             "PYTHONUNBUFFERED": "1",
         })
-        result = subprocess.run(
+        process = subprocess.Popen(
             [sys.executable, "-m", "agent_memory_kit.server", "--transport", "stdio"],
-            input="".join(json.dumps(request, ensure_ascii=False) + "\n" for request in requests),
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
-            capture_output=True,
-            timeout=30,
+            bufsize=1,
             env=environment,
         )
-        self.assertEqual(result.returncode, 0, result.stderr)
         replies = {}
-        for line in result.stdout.splitlines():
-            try:
-                message = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if "id" in message:
-                replies[message["id"]] = message
-        self.assertEqual(set(replies), {1, 2, 3, 4}, "STDOUT:\n" + result.stdout + "\nSTDERR:\n" + result.stderr)
+        try:
+            for request in requests:
+                process.stdin.write(json.dumps(request, ensure_ascii=False) + "\n")
+                process.stdin.flush()
+                if "id" not in request:
+                    continue
+                while request["id"] not in replies:
+                    ready, _, _ = select.select([process.stdout], [], [], 15)
+                    if not ready:
+                        raise AssertionError("Timed out waiting for STDIO response " + str(request["id"]))
+                    line = process.stdout.readline()
+                    if not line:
+                        raise AssertionError("STDIO server exited before response " + str(request["id"]))
+                    try:
+                        message = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    if "id" in message:
+                        replies[message["id"]] = message
+            process.stdin.close()
+            returncode = process.wait(timeout=15)
+            stderr = process.stderr.read()
+            self.assertEqual(returncode, 0, stderr)
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.wait()
+        self.assertEqual(set(replies), {1, 2, 3, 4}, str(replies))
         self.assertEqual(len(replies[2]["result"]["tools"]), 8)
         self.assertIn("result", replies[3], str(replies))
         self.assertFalse(replies[3]["result"]["structuredContent"]["replayed"])
