@@ -97,7 +97,7 @@ PYTHONPATH=src python3 -m agent_memory_kit.backup
 ci/verify.sh
 ```
 
-Скрипт использует отдельный Compose-проект `agent-memory-kit-verify`, выполняет unit/integration tests, HTTP smoke и restore acceptance, затем удаляет только свои ресурсы.
+Скрипт использует отдельный Compose-проект `agent-memory-kit-verify`, выполняет unit/integration tests, HTTP smoke и restore acceptance, затем удаляет только свои ресурсы. Полная история и worktree дополнительно сканируются `ci/gitleaks.sh`; исключение относится только к хэшам синтетических токенов в `content/principals.json`.
 
 ## Демонстрационные принципалы
 
