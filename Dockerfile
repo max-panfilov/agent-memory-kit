@@ -11,7 +11,7 @@ RUN apt-get update \
 COPY --from=uv /uv /usr/local/bin/uv
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 UV_LINK_MODE=copy
 WORKDIR /app
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml uv.lock README.md ./
 RUN --mount=type=cache,id=agent-memory-uv-python312-v1,target=/root/.cache/uv uv sync --frozen --no-dev --no-install-project
 COPY src ./src
 RUN --mount=type=cache,id=agent-memory-uv-python312-v1,target=/root/.cache/uv uv sync --frozen --no-dev --no-editable
