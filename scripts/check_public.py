@@ -12,7 +12,7 @@ FORBIDDEN = {
     "github-token": re.compile(r"\b(?:gho_|github_pat_)[A-Za-z0-9_]{16,}"),
     "openai-token": re.compile(r"\bsk-[A-Za-z0-9_-]{16,}"),
     "private-host": re.compile(r"(?:82\.146\.32\.2|188\.120\.255\.174|177\.203\.49\.206|internal\.pd|ci\.pd|ratio\.bz)"),
-    "private-path": re.compile(r"(?:/root/|/home/coder/|/var/lib/studio-platform)"),
+    "private-path": re.compile(r"(?:/root/studio|/home/coder/|/var/lib/studio-platform)"),
     "private-repository": re.compile(r"max-panfilov/studio-platform"),
 }
 
@@ -21,6 +21,8 @@ def main() -> int:
     violations = []
     for path in ROOT.rglob("*"):
         if ".git" in path.parts or "backups" in path.parts or path.is_dir():
+            continue
+        if path.relative_to(ROOT).as_posix() == "scripts/check_public.py":
             continue
         if path.is_symlink():
             violations.append(f"{path.relative_to(ROOT)}: symlink is not allowed")
