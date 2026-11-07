@@ -1,0 +1,4 @@
+FROM node:22-bookworm@sha256:7702d8aa4d5910871692af4480eb3ba86f23047a6417a44d857d06c95d060d3f
+RUN npm install --global mermaid@12.3.0
+COPY ci/check_mermaid.mjs /check_mermaid.mjs
+ENTRYPOINT ["node", "/check_mermaid.mjs", "/data"]

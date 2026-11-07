@@ -55,9 +55,10 @@ async def main() -> None:
             "project": "demo", "application_id": "demo-app", "repo_sha": "a" * 40,
         })
         assert context.data["application_id"] == "demo-app"
-        created = await client.call_tool("record_project_memory", event(event_id, "MCP release decision"))
+        payload = event(event_id, "MCP release decision")
+        created = await client.call_tool("record_project_memory", payload)
         assert created.data["replayed"] is False
-        replayed = await client.call_tool("record_project_memory", event(event_id, "MCP release decision"))
+        replayed = await client.call_tool("record_project_memory", payload)
         assert replayed.data["replayed"] is True
         conflict = await client.call_tool(
             "record_project_memory", event(event_id, "Changed payload"), raise_on_error=False

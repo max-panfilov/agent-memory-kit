@@ -21,3 +21,5 @@ docker compose --profile test run --rm test
 docker compose up -d mcp
 docker compose --profile test run --rm smoke
 PYTHONPATH="$ROOT/src" python3 -m agent_memory_kit.backup
+docker build --file "$ROOT/ci/Dockerfile.mermaid" --tag agent-memory-kit-mermaid:local "$ROOT"
+docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges --tmpfs /tmp:rw,noexec,nosuid,size=64m --volume "$ROOT:/data:ro" agent-memory-kit-mermaid:local
