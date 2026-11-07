@@ -23,6 +23,7 @@ ci/verify.sh
 | Мост | JSON и multiline SSE, correlation по ID, запрет редиректа и повторного запроса |
 | Backup | Манифест, tamper refusal, свежий restore, одинаковые ID/hash, неизменный source |
 | Публикация | Отсутствие запрещённых маркеров и symlink, `git diff --check` |
+| Mermaid | Все fenced blocks разбираются `mermaid.parse` в Node-контейнере без сети |
 
 ## Ручная проверка MCP
 
