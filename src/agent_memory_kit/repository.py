@@ -170,6 +170,8 @@ class Repository:
         except (asyncpg.exceptions.UniqueViolationError, asyncpg.exceptions.SerializationError) as error:
             async with self.pool.acquire() as connection:
                 saved = await self._read_with_connection(connection, project, event_id)
+            if not saved and isinstance(error, asyncpg.exceptions.SerializationError):
+                raise PublicError("MEMORY_WRITE_RETRY_REQUIRED") from error
             if not saved or saved["application_id"] != application or saved["payload_hash"] != event["payload_hash"]:
                 raise PublicError("MEMORY_REQUEST_ID_CONFLICT") from error
             return {"event": saved, "replayed": True, "readback_verified": True}

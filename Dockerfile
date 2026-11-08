@@ -27,6 +27,7 @@ ENTRYPOINT ["/app/.venv/bin/python", "-m", "agent_memory_kit.server"]
 CMD ["--transport", "http", "--host", "0.0.0.0", "--port", "8000"]
 
 FROM base AS checks
+COPY ci ./ci
 COPY migrations ./migrations
 COPY content ./content
 COPY schemas ./schemas

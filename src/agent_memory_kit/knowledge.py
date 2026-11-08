@@ -43,9 +43,14 @@ class Snapshot:
                     for document_id in application.get(key, []):
                         if document_id not in self.docs:
                             raise PublicError("INVALID_CONTEXT_DOCUMENT")
+                        if key == "required_documents" and self.docs[document_id]["status"] != "approved":
+                            raise PublicError("INVALID_REQUIRED_DOCUMENT_STATUS")
         identity = json.dumps(
             {
-                "documents": {key: value["sha256"] for key, value in self.docs.items()},
+                "documents": {
+                    key: {field: value for field, value in document.items() if field != "content"}
+                    for key, document in self.docs.items()
+                },
                 "registry": self.registry,
             },
             sort_keys=True,

@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .paths import ROOT
-POSTGRES_IMAGE = "postgres:17-alpine"
+POSTGRES_IMAGE = "postgres:17-alpine@sha256:3540c0362c809df084ffac0ae69fe794515f9de92692f02178bcdce0ef0302ac"
 
 
 class BackupError(RuntimeError):
