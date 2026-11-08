@@ -33,6 +33,7 @@
 - Тот же UUID и хэш: `replayed: true`, новой записи нет.
 - Тот же UUID с другим содержимым: `MEMORY_REQUEST_ID_CONFLICT`.
 - Потерянный исход транзакции: `MEMORY_WRITE_OUTCOME_UNKNOWN`, автоматического повтора нет.
+- Отменённая сериализация без сохранённой записи: `MEMORY_WRITE_RETRY_REQUIRED`; повтор только с тем же UUID и payload.
 - Исправление: новое событие с `supersedes_id`; старая строка не изменяется.
 
 Пример аргументов находится в `examples/synthetic-event.json`.
@@ -43,7 +44,7 @@
 
 ### `get_project_brief`
 
-Аргументы: `project_id`, необязательный `application_id`. Возвращает проект, 12 последних активных событий, 15 решений, 3 handoff, число прочитанных строк и `history_truncated`. LLM не вызывается.
+Аргументы: `project_id`, необязательный `application_id`. Возвращает проект, 12 последних активных событий, 15 решений, 3 handoff, число прочитанных строк и `history_truncated`. LLM не вызывается. Подтверждённое исправление наследует категорию исходного решения или handoff, оставаясь исходным событием типа `correction`. Для определения категории допускается до 1 000 дополнительных чтений предшественников; неполнота помечается `history_truncated`.
 
 ### `get_project_timeline`
 
@@ -92,6 +93,7 @@
 | `INVALID_MEMORY_TEXT` | Пустой или слишком длинный текст |
 | `POSSIBLE_SECRET_REFUSED` | Сработала ограниченная проверка секрета |
 | `MEMORY_REQUEST_ID_CONFLICT` | UUID уже связан с другой полезной нагрузкой |
+| `MEMORY_WRITE_RETRY_REQUIRED` | Сериализация отменена, запись не найдена; повтор только с тем же UUID/payload |
 | `MEMORY_WRITE_OUTCOME_UNKNOWN` | Исход записи неизвестен; нужен readback по исходному UUID |
 | `SUPERSEDED_MEMORY_NOT_AVAILABLE` | Цель исправления отсутствует в той же области |
 | `CONTENT_VERSION_GONE` | Снимок документа устарел |

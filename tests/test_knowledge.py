@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import unittest
+import json
+import shutil
+import tempfile
+from pathlib import Path
 
 from agent_memory_kit.errors import PublicError
 from agent_memory_kit.knowledge import Snapshot
@@ -42,6 +46,39 @@ class KnowledgeTests(unittest.TestCase):
         draft = self.snapshot.search("векторное", profile="future")
         self.assertEqual(draft["results"][0]["status"], "draft")
         self.assertTrue(draft["drafts_are_reference_only"])
+
+    def test_metadata_changes_invalidate_snapshot(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            shutil.copytree(CONTENT, root / "content")
+            shutil.copytree(CONTENT.parent / "schemas", root / "schemas")
+            catalog_path = root / "content" / "documents.json"
+            original = json.loads(catalog_path.read_text())
+            for field, value in (("status", "deprecated"), ("version", "1.1.0"),
+                                 ("title", "Updated title"), ("profiles", ["changed"])):
+                with self.subTest(field=field):
+                    catalog = json.loads(json.dumps(original))
+                    catalog["documents"][1][field] = value
+                    catalog_path.write_text(json.dumps(catalog))
+                    changed = Snapshot(root / "content")
+                    self.assertNotEqual(changed.id, self.snapshot.id)
+                    with self.assertRaisesRegex(PublicError, "CONTENT_VERSION_GONE"):
+                        changed.document("operations-guide", snapshot_id=self.snapshot.id)
+
+    def test_unapproved_required_document_is_refused(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            shutil.copytree(CONTENT, root / "content")
+            shutil.copytree(CONTENT.parent / "schemas", root / "schemas")
+            catalog_path = root / "content" / "documents.json"
+            original = json.loads(catalog_path.read_text())
+            for status in ("draft", "observed", "deprecated"):
+                with self.subTest(status=status):
+                    catalog = json.loads(json.dumps(original))
+                    catalog["documents"][0]["status"] = status
+                    catalog_path.write_text(json.dumps(catalog))
+                    with self.assertRaisesRegex(PublicError, "INVALID_REQUIRED_DOCUMENT_STATUS"):
+                        Snapshot(root / "content")
 
 
 if __name__ == "__main__":

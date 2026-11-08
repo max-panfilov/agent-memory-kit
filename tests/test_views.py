@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from unittest.mock import patch
 
 from agent_memory_kit.errors import PublicError
 from agent_memory_kit.memory import MemoryService
@@ -26,6 +27,33 @@ class ViewTests(DatabaseTestCase):
         result = await service.search(self.principal, 1, "решение")
         self.assertEqual([item["event"]["id"] for item in result["results"]], [correction["id"]])
         self.assertEqual(result["ranking"], "canonical-bm25-v1")
+        self.assertEqual([row["id"] for row in brief["decisions"]], [correction["id"]])
+
+    async def test_chained_correction_keeps_category_after_recent_window(self):
+        service = MemoryService(self.repository, self.snapshot)
+        old = make_event(event_type="handoff", occurred_at="2026-11-01T09:00:00Z")
+        await self.repository.append(old, "demo-writer")
+        previous = old
+        for day in (2, 3):
+            previous = make_event(event_type="correction", event_status="confirmed",
+                                  supersedes_id=previous["id"], occurred_at=f"2026-11-{day:02}T09:00:00Z")
+            await self.repository.append(previous, "demo-writer")
+        for _ in range(12):
+            await self.repository.append(make_event(event_type="feature"), "demo-writer")
+        brief = await service.brief(self.principal, 1)
+        self.assertNotIn(previous["id"], [row["id"] for row in brief["recent_events"]])
+        self.assertEqual([row["id"] for row in brief["handoffs"]], [previous["id"]])
+
+    async def test_correction_classifies_source_outside_scan_window(self):
+        service = MemoryService(self.repository, self.snapshot)
+        old = make_event(occurred_at="2026-11-01T09:00:00Z")
+        await self.repository.append(old, "demo-writer")
+        correction = make_event(event_type="correction", event_status="confirmed", supersedes_id=old["id"])
+        await self.repository.append(correction, "demo-writer")
+        with patch("agent_memory_kit.memory.MAX_SCAN", 1):
+            brief = await service.brief(self.principal, 1)
+        self.assertTrue(brief["history_truncated"])
+        self.assertEqual([row["id"] for row in brief["decisions"]], [correction["id"]])
 
     async def test_proposed_correction_does_not_hide_original(self):
         service = MemoryService(self.repository, self.snapshot)

@@ -49,6 +49,28 @@ class RepositoryTests(DatabaseTestCase):
         self.assertTrue(replay["replayed"])
         self.assertEqual(await self.repository.count(), 1)
 
+    async def test_real_serialization_abort_is_retryable_without_uuid_conflict(self):
+        event = make_event()
+        original_commit = asyncpg.transaction.Transaction._Transaction__commit
+
+        async def conflicting_commit(transaction):
+            # Cause a real PostgreSQL concurrent-update serialization failure;
+            # the hook controls scheduling, not the exception or DB outcome.
+            await transaction._connection.fetchval("SELECT name FROM projects WHERE id = 1")
+            async with self.repository.pool.acquire() as other:
+                await other.execute("UPDATE projects SET name = name || ' concurrent' WHERE id = 1")
+            await transaction._connection.execute("UPDATE projects SET name = name || ' candidate' WHERE id = 1")
+            return await original_commit(transaction)
+
+        with patch("asyncpg.transaction.Transaction._Transaction__commit", new=conflicting_commit):
+            with self.assertRaisesRegex(PublicError, "MEMORY_WRITE_RETRY_REQUIRED"):
+                await self.repository.append(event, "demo-writer")
+        self.assertIsNone(await self.repository.read(1, event["id"]))
+        self.assertEqual(await self.repository.count(), 0)
+        retry = await self.repository.append(event, "demo-writer")
+        self.assertFalse(retry["replayed"])
+        self.assertEqual(await self.repository.count(), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -235,20 +235,52 @@ class MemoryService:
             if row["supersedes_id"] and row["event_status"] == "confirmed"
         }
         active = [row for row in rows if row["id"] not in replaced]
+        categories, ancestry_truncated = await self._categories(active, rows)
         return {
             "project": card,
             "application_id": application_id,
             "recent_events": active[:12],
-            "decisions": [row for row in active if row["event_type"] == "decision"][:15],
-            "handoffs": [row for row in active if row["event_type"] == "handoff"][:3],
+            "decisions": [row for row in active if categories[row["id"]] == "decision"][:15],
+            "handoffs": [row for row in active if categories[row["id"]] == "handoff"][:3],
             "scanned_events": len(rows),
-            "history_truncated": truncated,
+            "history_truncated": truncated or ancestry_truncated,
             "data_only": True,
             "warnings": [
                 "Brief is a deterministic view of recorded events, not a newly verified project audit. "
                 "Proposed/observed decisions are not accepted policy. Read event details/sources before acting."
             ],
         }
+
+    async def _categories(self, active: list[dict], rows: list[dict]) -> tuple[dict[str, str], bool]:
+        """Classify confirmed corrections by their source, preserving canonical rows.
+
+        Source events may be outside the recent-event window. Bound additional
+        reads across the entire brief and flag incomplete ancestry explicitly.
+        """
+        cache = {row["id"]: row for row in rows}
+        categories = {}
+        reads = 0
+        truncated = False
+        for row in active:
+            current = row
+            seen = set()
+            while current["event_type"] == "correction" and current["event_status"] == "confirmed" and current["supersedes_id"]:
+                previous_id = current["supersedes_id"]
+                if previous_id in seen:
+                    raise PublicError("MEMORY_STORED_EVENT_INVALID")
+                seen.add(previous_id)
+                if previous_id not in cache:
+                    if reads >= MAX_SCAN:
+                        truncated = True
+                        break
+                    cache[previous_id] = await self.repository.read(row["project"], previous_id)
+                    reads += 1
+                previous = cache[previous_id]
+                if not previous or previous["application_id"] != row["application_id"]:
+                    raise PublicError("MEMORY_STORED_EVENT_INVALID")
+                current = previous
+            categories[row["id"]] = current["event_type"]
+        return categories, truncated
 
     async def search(
         self, principal: Principal, project_id: int, query: str, limit: int = 10, application_id: str | None = None
